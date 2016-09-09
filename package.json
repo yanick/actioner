@@ -1,0 +1,44 @@
+{
+  "name": "actioner",
+  "version": "0.0.1",
+  "description": "Utility object for Redux actions",
+  "main": "dist-node/actioner.js",
+  "scripts": {
+    "test": "babel-tap",
+    "build-node": "babel src --out-dir dist-node",
+    "build-browser": "npm run browserify && npm run uglify",
+    "browserify": "browserify --standalone helloJavascript dist-node | derequire > dist/hello-javascript.js",
+    "uglify": "uglifyjs -mc < dist/hello-javascript.js > dist/hello-javascript.min.js",
+    "clean": "rm -fr dist/* dist-node/*",
+    "build": "npm run clean && npm run build-node",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanick/actioner.git"
+  },
+  "keywords": [
+    "redux"
+  ],
+  "author": "Yanick Champoux <yanick@babyl.ca> (http://techblog.babyl.ca)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanick/actioner/issues"
+  },
+  "homepage": "https://github.com/yanick/actioner#readme",
+  "dependencies": {
+    "json-schema-shorthand": "^0.1.0",
+    "lodash": "^4.14.1"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-cli": "^6.11.4",
+    "babel-core": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-1": "^6.5.0",
+    "tap": "^6.3.0"
+  },
+  "directories": {
+    "test": "test"
+  }
+}
