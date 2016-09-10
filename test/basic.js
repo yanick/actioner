@@ -1,6 +1,6 @@
 import tap from 'tap';
 
-import Actioner from 'actioner';
+import Actioner from '../src/actioner';
 
 tap.test( 'basic use', tap => {
     let Actions = new Actioner();

@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import shorthand from 'json-schema-shorthand';
 
-
 let Ajv;
 
 export default

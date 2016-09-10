@@ -4,7 +4,7 @@
   "description": "Utility object for Redux actions",
   "main": "dist-node/actioner.js",
   "scripts": {
-    "test": "tap test/*",
+    "test": "babel-tap test/*",
     "build-node": "babel src --out-dir dist-node",
     "build-browser": "npm run browserify && npm run uglify",
     "browserify": "browserify --standalone helloJavascript dist-node | derequire > dist/hello-javascript.js",
