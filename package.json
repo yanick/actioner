@@ -4,7 +4,7 @@
   "description": "Utility object for Redux actions",
   "main": "dist-node/actioner.js",
   "scripts": {
-    "test": "babel-tap",
+    "test": "tap test/*",
     "build-node": "babel src --out-dir dist-node",
     "build-browser": "npm run browserify && npm run uglify",
     "browserify": "browserify --standalone helloJavascript dist-node | derequire > dist/hello-javascript.js",
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/yanick/actioner#readme",
   "dependencies": {
+    "ajv": "^4.7.0",
     "json-schema-shorthand": "^0.1.0",
     "lodash": "^4.14.1"
   },
