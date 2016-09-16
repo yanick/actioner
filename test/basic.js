@@ -145,4 +145,42 @@ tap.test( 'immutable', tap => {
     tap.end();
 });
 
+tap.test( 'dispatch', tap => {
+    let dispatched = [];
+    let store = {
+        dispatch: a => dispatched.push(a)
+    };
+
+    let actions = new Actioner({ store: store });
+
+    actions._add( 'foo' );
+    
+    actions.dispatch_foo({ bar: 1 });
+
+    tap.same( dispatched.shift(), { type: 'FOO', bar: 1 } );
+
+    actions.dispatch_$foo({ bar: 2 });
+
+    tap.same( dispatched.shift(), { type: 'FOO', bar: 2 } );
+
+    tap.test( '_store function', tap => {
+        let actions = new Actioner();
+        actions._store = store;
+
+        actions._add( 'foo' );
+        
+        actions.dispatch_foo({ bar: 1 });
+
+        tap.same( dispatched.shift(), { type: 'FOO', bar: 1 } );
+
+        actions.dispatch_$foo({ bar: 2 });
+
+        tap.same( dispatched.shift(), { type: 'FOO', bar: 2 } );
+
+        tap.end();
+    });
+
+    tap.end();
+});
+
 tap.end();

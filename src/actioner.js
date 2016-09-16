@@ -16,6 +16,8 @@ class Actions {
 
     _immutable = false;
 
+    _store = undefined;
+
     constructor(args={}) {
         if( args.schema_id ) this._schema_id = args.schema_id;
 
@@ -26,6 +28,10 @@ class Actions {
         if( args.immutable ) {
             this._immutable = args.immutable;
             Immutable = require( 'seamless-immutable' );
+        }
+
+        if( args.store ) {
+            this._store = args.store;
         }
     }
 
@@ -111,6 +117,13 @@ class Actions {
             return action;
         };
 
+        this[ 'dispatch_' + name ] = (args) => {
+            this._store.dispatch( this[name](args) );
+        };
+
+        this[ 'dispatch_$' + name ] = (args) => {
+            this._store.dispatch( this[ '$' + name](args) );
+        };
 
         schema = schema ? { object: schema } : {};
 

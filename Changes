@@ -1,6 +1,7 @@
 Revision history for actioner
 
 $NEXT
+    - Add dispatch helpers.
     - Can set the actions to be immutable.
     - Add raw generators ($foo).
     - Couldn't add a second action if validation is enabled 

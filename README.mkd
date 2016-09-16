@@ -72,14 +72,21 @@ With json-schema validation:
     let MyActions = new Actioner({
         schema_id: 'http://myapp.redux/actions',
         validate: true,
-        immutable: false
+        immutable: false,
+        store : my_store
     });
 
 Creates a new actioner action object. If `schema_id` is not provided, it 
 defaults to `http://localhost/actions`. `validate` is also optional, and
-defaults to `false`. If `immutable` is set to true, the generated
+defaults to `false`. 
+
+If `immutable` is set to true, the generated
 actions will be set as immutable objects via
 [seamless-immutable](https://github.com/rtfeldman/seamless-immutable).
+Defaults to `false`
+
+`store` is an optional store object, that will be used
+for the `dispatch_*` functions.
 
 ### _add( name, generating_function, schema )
 
@@ -92,7 +99,7 @@ actions will be set as immutable objects via
 Adds a new action. The `name` is the only mandatory argument, and must be in
 its lowercase format (camel-case and snake-case, `do_stuff` and `doStuff`, are
 both accepted. Once the action is added, the Actioner object will be given
-three new properties: 
+five new properties: 
 
 * the upper-cased action name (`DO_STUFF`) will returns its string
 representation,
@@ -102,6 +109,12 @@ representation,
 * the lower-case action name prepended with `$` (`$do_stuff`)
 will be the default action generator that always takes
 in a raw object (and only add the `type` to it).
+
+* a `dispatch_*` function (`dispatch_do_stuff`) that will
+create the action and dispatch it to the store.
+
+* a `dispatch_$*` function (`dispatch_$do_stuff`) that will
+create the action via the raw generator and dispatch it to the store.
 
     // snake-case
     MyActions._add( 'do_stuff' );
@@ -141,6 +154,12 @@ creation if validation is enabled. The schema is expanded by
 
 Turns validation `on` or `off`. Validation is done via 
 [avj](https://github.com/epoberezkin/ajv).
+
+### _store
+
+Sets a store object to be used by the `dispatch_*` functions.
+
+    MyActions._store = myReduxStore;
 
 ### _schema
 
