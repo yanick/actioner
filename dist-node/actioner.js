@@ -20,6 +20,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Ajv = void 0;
+var Immutable = void 0;
 
 var Actions = function () {
     function Actions() {
@@ -31,11 +32,22 @@ var Actions = function () {
         this._is_validating = false;
         this._schema_id = 'http://localhost/actions';
         this._schema = {};
+        this._immutable = false;
+        this._store = undefined;
 
         if (args.schema_id) this._schema_id = args.schema_id;
 
         if (args.validate !== undefined) {
             this._validate(args.validate);
+        }
+
+        if (args.immutable) {
+            this._immutable = args.immutable;
+            Immutable = require('seamless-immutable');
+        }
+
+        if (args.store) {
+            this._store = args.store;
         }
     }
 
@@ -50,7 +62,10 @@ var Actions = function () {
                 }).value()
             });
 
-            if (this._ajv) this._ajv.addSchema(this._schema, this._schema_id);
+            if (this._ajv) {
+                this._ajv.removeSchema(this._schema);
+                this._ajv.addSchema(this._schema, this._schema_id);
+            }
         }
     }, {
         key: '_validate',
@@ -100,7 +115,36 @@ var Actions = function () {
                     }
                 }
 
+                if (_this._immutable) action = Immutable(action);
+
                 return action;
+            };
+
+            this['$' + name] = function (args) {
+                var action = _lodash2.default.cloneDeep(args);
+                action.type = token;
+
+                if (_this._is_validating) {
+                    if (!_this._ajv.validate({
+                        '$ref': _this._schema_id + '#/definitions/' + name
+                    }, action)) {
+                        var error = _this._ajv.errors;
+                        error.action = action;
+                        throw error;
+                    }
+                }
+
+                if (_this._immutable) action = Immutable(action);
+
+                return action;
+            };
+
+            this['dispatch_' + name] = function (args) {
+                _this._store.dispatch(_this[name](args));
+            };
+
+            this['dispatch_$' + name] = function (args) {
+                _this._store.dispatch(_this['$' + name](args));
             };
 
             schema = schema ? { object: schema } : {};
