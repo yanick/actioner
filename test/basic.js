@@ -73,4 +73,30 @@ tap.test( 'constructor', tap => {
     tap.end();
 });
 
+tap.test( 'validation', tap => {
+    let actions = new Actioner({
+        validate: true, 
+        schema_id: "stuff" 
+    });
+
+    actions._add( 'foo', { bar: 'string' } );
+    actions._add( 'baz', { bar: 'string' } );
+
+    try {
+        actions.foo({ bar: 'hello' });
+        tap.pass( 'good action' );
+    } catch(e) { 
+        // do nothing
+    }
+
+    try {
+        actions.foo({ bar: [] });
+    } catch(e) { 
+        tap.pass( 'bad action' );
+    }
+
+    tap.end();
+
+});
+
 tap.end();

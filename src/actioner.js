@@ -33,7 +33,10 @@ class Actions {
                 ).value()
         });
 
-        if ( this._ajv ) this._ajv.addSchema( this._schema, this._schema_id );
+        if ( this._ajv ) {
+            this._ajv.removeSchema( this._schema );
+            this._ajv.addSchema( this._schema, this._schema_id );
+        }
     }
 
     _validate(v) { 
