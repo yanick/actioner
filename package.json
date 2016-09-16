@@ -1,6 +1,6 @@
 {
   "name": "actioner",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Utility object for Redux actions",
   "main": "dist-node/actioner.js",
   "scripts": {
