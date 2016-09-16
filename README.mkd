@@ -71,12 +71,15 @@ With json-schema validation:
 
     let MyActions = new Actioner({
         schema_id: 'http://myapp.redux/actions',
-        validate: true 
+        validate: true,
+        immutable: false
     });
 
 Creates a new actioner action object. If `schema_id` is not provided, it 
 defaults to `http://localhost/actions`. `validate` is also optional, and
-defaults to `false`.
+defaults to `false`. If `immutable` is set to true, the generated
+actions will be set as immutable objects via
+[seamless-immutable](https://github.com/rtfeldman/seamless-immutable).
 
 ### _add( name, generating_function, schema )
 

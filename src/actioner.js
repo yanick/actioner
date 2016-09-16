@@ -2,6 +2,7 @@ import _ from 'lodash';
 import shorthand from 'json-schema-shorthand';
 
 let Ajv;
+let Immutable;
 
 export default
 class Actions {
@@ -13,11 +14,18 @@ class Actions {
 
     _schema = {};
 
+    _immutable = false;
+
     constructor(args={}) {
         if( args.schema_id ) this._schema_id = args.schema_id;
 
         if( args.validate !== undefined ) {
             this._validate(args.validate);
+        }
+
+        if( args.immutable ) {
+            this._immutable = args.immutable;
+            Immutable = require( 'seamless-immutable' );
         }
     }
 
@@ -78,6 +86,8 @@ class Actions {
 
             }
 
+            if ( this._immutable ) action = Immutable(action);
+
             return action;
         };
 
@@ -95,6 +105,8 @@ class Actions {
                 }
 
             }
+
+            if ( this._immutable ) action = Immutable(action);
 
             return action;
         };

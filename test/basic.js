@@ -117,4 +117,32 @@ tap.test( 'raw generators', tap => {
     tap.end();
 });
 
+tap.test( 'immutable', tap => {
+    let actions = new Actioner();
+
+    actions._add( 'foo' );
+
+    let foo = actions.foo({ bar:  1 });
+    foo.baz = 2;
+
+    tap.same( foo, { type: 'FOO', bar: 1, baz: 2 }, 'mutable' );
+
+    actions = new Actioner({ immutable: true });
+
+    actions._add( 'foo' );
+
+    foo = actions.foo({ bar:  1 });
+    try {
+        foo.baz = 2;
+        tap.fail("can't assign to immutable");
+    }
+    catch(e) {
+        tap.pass("can't assign to immutable");
+    }
+
+    tap.same( foo.asMutable(), { type: 'FOO', bar: 1 }, 'immutable' );
+
+    tap.end();
+});
+
 tap.end();

@@ -1,7 +1,8 @@
 Revision history for actioner
 
 $NEXT
-    - add raw generators ($foo).
+    - Can set the actions to be immutable.
+    - Add raw generators ($foo).
     - Couldn't add a second action if validation is enabled 
         (because it was trying to add the schema without
         removing it).
