@@ -99,4 +99,22 @@ tap.test( 'validation', tap => {
 
 });
 
+tap.test( 'raw generators', tap => {
+    let actions = new Actioner();
+
+    actions._add( 'foo', x => ( { stuff:x } ) );
+
+    tap.same( actions.foo( 'blah' ), {
+        type: 'FOO',
+        stuff: 'blah' 
+    }, 'regular generator' );
+
+    tap.same( actions.$foo( { 'thing': 'bleh' }), {
+        type: 'FOO',
+        thing: 'bleh' 
+    }, 'raw generator' );
+
+    tap.end();
+});
+
 tap.end();

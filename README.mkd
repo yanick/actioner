@@ -89,8 +89,16 @@ defaults to `false`.
 Adds a new action. The `name` is the only mandatory argument, and must be in
 its lowercase format (camel-case and snake-case, `do_stuff` and `doStuff`, are
 both accepted. Once the action is added, the Actioner object will be given
-two new properties: the upper-cased action name will returns its string
-representation, and the lower-case action name will be the action generator.
+three new properties: 
+
+* the upper-cased action name (`DO_STUFF`) will returns its string
+representation,
+
+* the lower-case action name (`do_stuff`) will be the action generator,
+
+* the lower-case action name prepended with `$` (`$do_stuff`)
+will be the default action generator that always takes
+in a raw object (and only add the `type` to it).
 
     // snake-case
     MyActions._add( 'do_stuff' );
@@ -116,6 +124,10 @@ will still be added.
     MyActions._add( 'do_stuff', thing => { must_do: thing } );
 
     MyActions.do_stuff( 'wash potatoes' );
+    // === { type: 'DO_STUFF', must_do: 'wash potatoes' }
+
+    // to pass a raw object, use the '$' generator
+    MyActions.$do_stuff({ must_do: 'wash potatoes' });
     // === { type: 'DO_STUFF', must_do: 'wash potatoes' }
 
 A schema can also be given, which will be used to validate actions upon

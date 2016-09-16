@@ -81,6 +81,25 @@ class Actions {
             return action;
         };
 
+        this[ '$' + name ] = (args) => {
+            let action = _.cloneDeep(args);
+            action.type = token;
+
+            if ( this._is_validating ) {
+                if ( ! this._ajv.validate({
+                    '$ref': this._schema_id + '#/definitions/' + name
+                }, action )){
+                    let error = this._ajv.errors;
+                    error.action = action;
+                    throw error;
+                }
+
+            }
+
+            return action;
+        };
+
+
         schema = schema ? { object: schema } : {};
 
         schema = shorthand(schema);
