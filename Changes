@@ -1,5 +1,7 @@
 Revision history for actioner
 
+    - dispatch_* functions were only acknowledging their first argument.
+
 $NEXT
     - Add dispatch helpers.
     - Can set the actions to be immutable.

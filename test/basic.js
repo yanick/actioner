@@ -154,6 +154,8 @@ tap.test( 'dispatch', tap => {
     let actions = new Actioner({ store: store });
 
     actions._add( 'foo' );
+
+    actions._add( 'bar', (x,y) => (  { x, y } ) );
     
     actions.dispatch_foo({ bar: 1 });
 
@@ -162,6 +164,14 @@ tap.test( 'dispatch', tap => {
     actions.dispatch_$foo({ bar: 2 });
 
     tap.same( dispatched.shift(), { type: 'FOO', bar: 2 } );
+
+    actions.dispatch_bar(1,2);
+
+    tap.same( dispatched.shift(), { type: 'BAR', x: 1, y: 2 } );
+
+    actions.dispatch_$bar({ x: 3, y: 4 });
+
+    tap.same( dispatched.shift(), { type: 'BAR', x: 3, y: 4 } );
 
     tap.test( '_store function', tap => {
         let actions = new Actioner();

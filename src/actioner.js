@@ -117,8 +117,8 @@ class Actions {
             return action;
         };
 
-        this[ 'dispatch_' + name ] = (args) => {
-            this._store.dispatch( this[name](args) );
+        this[ 'dispatch_' + name ] = (...args) => {
+            this._store.dispatch( this[name].apply(null,args) );
         };
 
         this[ 'dispatch_$' + name ] = (args) => {
