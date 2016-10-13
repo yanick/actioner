@@ -139,8 +139,12 @@ var Actions = function () {
                 return action;
             };
 
-            this['dispatch_' + name] = function (args) {
-                _this._store.dispatch(_this[name](args));
+            this['dispatch_' + name] = function () {
+                for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                    args[_key2] = arguments[_key2];
+                }
+
+                _this._store.dispatch(_this[name].apply(null, args));
             };
 
             this['dispatch_$' + name] = function (args) {
