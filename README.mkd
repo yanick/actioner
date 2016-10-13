@@ -104,17 +104,17 @@ five new properties:
 * the upper-cased action name (`DO_STUFF`) will returns its string
 representation,
 
-* the lower-case action name (`do_stuff`) will be the action generator,
+* the lower-case action name (`do_stuff`) will be the action creator,
 
 * the lower-case action name prepended with `$` (`$do_stuff`)
-will be the default action generator that always takes
+will be the default action creator that always takes
 in a raw object (and only add the `type` to it).
 
 * a `dispatch_*` function (`dispatch_do_stuff`) that will
 create the action and dispatch it to the store.
 
 * a `dispatch_$*` function (`dispatch_$do_stuff`) that will
-create the action via the raw generator and dispatch it to the store.
+create the action via the raw creator and dispatch it to the store.
 
     // snake-case
     MyActions._add( 'do_stuff' );
@@ -132,7 +132,7 @@ create the action via the raw generator and dispatch it to the store.
     MyActions.doThing({ stuff: 'wash potatoes' });
     // === { type: 'DO_THING', stuff: 'wash potatoes' }
 
-By default, the generator function simply takes its input object and adds the
+By default, the creator function simply takes its input object and adds the
 `type` attribute to it. A function can be given to `_add` to custom the
 generation. The function is expected to return an object (to which the `type`
 will still be added.
@@ -142,7 +142,7 @@ will still be added.
     MyActions.do_stuff( 'wash potatoes' );
     // === { type: 'DO_STUFF', must_do: 'wash potatoes' }
 
-    // to pass a raw object, use the '$' generator
+    // to pass a raw object, use the '$' creator
     MyActions.$do_stuff({ must_do: 'wash potatoes' });
     // === { type: 'DO_STUFF', must_do: 'wash potatoes' }
 
