@@ -35,8 +35,10 @@ tap.test( 'generator', tap => {
 tap.test( 'validation + schema', tap => {
     let Actions = new Actioner();
     Actions._add( 'add_ship', { 
-        ship_id: { type: 'string', required: true },
-        hull:    { type: 'number', required: true },
+        properties: {
+            ship_id: { type: 'string', required: true },
+            hull:    { type: 'number', required: true },
+        },
         additional_properties: false,
     });
 
@@ -79,8 +81,8 @@ tap.test( 'validation', tap => {
         schema_id: "stuff" 
     });
 
-    actions._add( 'foo', { bar: 'string' } );
-    actions._add( 'baz', { bar: 'string' } );
+    actions._add( 'foo', { properties: { bar: 'string' } } );
+    actions._add( 'baz', { properties: { bar: 'string' } } );
 
     try {
         actions.foo({ bar: 'hello' });
@@ -189,6 +191,23 @@ tap.test( 'dispatch', tap => {
 
         tap.end();
     });
+
+    tap.end();
+});
+
+tap.test( 'schema_include', tap => {
+    let actions = new Actioner({
+        schema_include: { properties: { alpha: 'number' } }
+    });
+
+    actions.$add( 'foo', { properties: { beta: 'string' } } );
+
+    tap.same( actions.$schema.definitions.foo.properties,
+        { alpha: {  type: 'number' }, beta: { type: 'string' },
+            type: { enum: [ 'FOO' ] }
+    }
+    );
+
 
     tap.end();
 });

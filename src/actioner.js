@@ -18,6 +18,9 @@ class Actions {
 
     $store = undefined;
 
+    $schema_include = null;
+    
+
     constructor(args={}) {
         if( args.schema_id ) this._schema_id = args.schema_id;
 
@@ -33,6 +36,8 @@ class Actions {
         if( args.store ) {
             this.$store = args.store;
         }
+
+        this.$schema_include = args.schema_include;
 
     }
 
@@ -133,17 +138,15 @@ class Actions {
             this._store.dispatch( this[ '$' + name](args) );
         };
 
-        schema = schema ? { object: schema } : {};
-
-        schema = shorthand(schema);
+        schema = shorthand( _.merge( schema, 
+            this.$schema_include, 
+            { type: 'object' },
+        )); 
 
         if (! schema.properties ) {
             schema.properties = {}
         }
         schema.properties['type'] = { enum: [ token ] };
-        if( schema.additionalProperties === undefined ) {
-            schema.additionalProperties = false;
-        }
         this._schema_defs[name] = schema;
 
         this._update_schema();

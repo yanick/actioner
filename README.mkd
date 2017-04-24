@@ -72,10 +72,11 @@ With json-schema validation:
 ### new Actioner({ schema_id: url, validate: boolean })
 
     let MyActions = new Actioner({
-        schema_id: 'http://myapp.redux/actions',
-        validate: true,
-        immutable: false,
-        store : my_store
+        schema_id:      'http://myapp.redux/actions',
+        validate:       true,
+        immutable:      false,
+        store:          my_store,
+        schema_include: { additional_properties: false }
     });
 
 Creates a new actioner action object. If `schema_id` is not provided, it 
@@ -181,3 +182,8 @@ provided to `$add()`).
 The `$schema` method was previously named `_schema` (which is now deprecated).
 
 
+### $schema_include
+
+Accessors to the data to be merged with all action schemas.
+Note that changing the `$schema_include` only reflect
+on subsequently `$add`ed actions.
