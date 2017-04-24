@@ -12,11 +12,11 @@ class Actions {
 
     _schema_id = 'http://localhost/actions';
 
-    _schema = {};
+    $schema = {};
 
     _immutable = false;
 
-    _store = undefined;
+    $store = undefined;
 
     constructor(args={}) {
         if( args.schema_id ) this._schema_id = args.schema_id;
@@ -31,11 +31,17 @@ class Actions {
         }
 
         if( args.store ) {
-            this._store = args.store;
+            this.$store = args.store;
         }
+
     }
 
-    get schema() { return this._schema }
+    get _store()  { return this.$store }
+    set _store(s) { return this.$store = s }
+
+    get schema()   { return this.$schema }
+    get _schema()  { return this.$schema }
+    set _schema(s) { return this.$schema = s }
 
     _update_schema() {
         this._schema = shorthand({
@@ -53,7 +59,7 @@ class Actions {
         }
     }
 
-    _validate(v) { 
+    $validate(v) { 
         this._is_validating = v 
 
         // only require if needed
@@ -67,7 +73,9 @@ class Actions {
         }
     }
 
-    _add( name, ...args ) {
+    _validate = v => this.$validate(v); 
+
+    $add( name, ...args ) {
         let func = 
             args.length && typeof args[0] === 'function' ? args.shift() : x => x || {};
 
@@ -141,5 +149,8 @@ class Actions {
         this._update_schema();
 
     }
+
+    _add = (...args) => this.$add(...args);
+
 
 }

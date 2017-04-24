@@ -15,8 +15,8 @@ The simple case:
 
     let Actions = new Actioner();
 
-    Actions._add( 'move_ship' );
-    Actions._add( 'add_ship' );
+    Actions.$add( 'move_ship' );
+    Actions.$add( 'add_ship' );
 
     console.log( Actions.MOVE_SHIP ); // prints 'MOVE_SHIP'
 
@@ -26,7 +26,7 @@ The simple case:
 
 Definining custom generating functions:
 
-    Actions._add( 'move_ship', ship => ({
+    Actions.$add( 'move_ship', ship => ({
         ( typeof ship === 'object' ) ? ship.id : ship
     }) );
 
@@ -37,17 +37,19 @@ With json-schema validation:
 
     new Actions = new Actioner({ schema_id: 'http://example.com/actions' });
 
-    Actions._add( 'add_ship', {
-        ship_id: { type: 'string', required: true },
-        hull:    { type: 'number', required: true },
+    Actions.$add( 'add_ship', {
+        properties: {
+            ship_id: { type: 'string', required: true },
+            hull:    { type: 'number', required: true },
+        },
         additional_properties: false,
     });
 
-    Actions._validate(true);
+    Actions.$validate(true);
 
     Actions.add_ship({ ship_id: 'enkidu' }); // will throw 
 
-    let schema = Actions._schema();
+    let schema = Actions.$schema();
     // schema === { 
     //     id: 'http://localhost/actions',
     //     oneOf: [ { '$ref': '#/definitions/add_ship' } ] 
@@ -88,13 +90,16 @@ Defaults to `false`
 `store` is an optional store object, that will be used
 for the `dispatch_*` functions.
 
-### _add( name, generating_function, schema )
+If provided, `schema_include` will be merged in to all
+action schema. 
 
-    MyActions._add( 'do_stuff' );
+### $add( name, generating_function, schema )
 
-    MyActions._add( 'do_other_stuff, stuff => ( { thingy: stuff } ) )
+    MyActions.$add( 'do_stuff' );
 
-    MyActions._add( 'do_sumfin_else, { properties: { thingy: 'object' } } )
+    MyActions.$add( 'do_other_stuff, stuff => ( { thingy: stuff } ) )
+
+    MyActions.$add( 'do_sumfin_else, { properties: { thingy: 'object' } } )
 
 Adds a new action. The `name` is the only mandatory argument, and must be in
 its lowercase format (camel-case and snake-case, `do_stuff` and `doStuff`, are
@@ -117,7 +122,7 @@ create the action and dispatch it to the store.
 create the action via the raw creator and dispatch it to the store.
 
     // snake-case
-    MyActions._add( 'do_stuff' );
+    MyActions.$add( 'do_stuff' );
 
     MyActions.DO_STUFF;  // === 'DO_STUFF'
 
@@ -125,7 +130,7 @@ create the action via the raw creator and dispatch it to the store.
     // === { type: 'DO_STUFF', thing: 'wash potatoes' }
 
     // camel-case
-    MyActions._add( 'doThing' );
+    MyActions.$add( 'doThing' );
 
     MyActions.DO_THING;  // === 'DO_THING'
 
@@ -137,7 +142,7 @@ By default, the creator function simply takes its input object and adds the
 generation. The function is expected to return an object (to which the `type`
 will still be added.
 
-    MyActions._add( 'do_stuff', thing => { must_do: thing } );
+    MyActions.$add( 'do_stuff', thing => { must_do: thing } );
 
     MyActions.do_stuff( 'wash potatoes' );
     // === { type: 'DO_STUFF', must_do: 'wash potatoes' }
@@ -150,20 +155,29 @@ A schema can also be given, which will be used to validate actions upon
 creation if validation is enabled. The schema is expanded by
 [json-schema-shorthand](https://github.com/yanick/json-schema-shorthand).
 
-### _validate(boolean)
+The `$add` method was previously named `_add` (which is now deprecated).
+
+### $validate(boolean)
 
 Turns validation `on` or `off`. Validation is done via 
 [avj](https://github.com/epoberezkin/ajv).
 
-### _store
+The `$validate` method was previously named `_validate` (which is now deprecated).
+
+### $store
 
 Sets a store object to be used by the `dispatch_*` functions.
 
-    MyActions._store = myReduxStore;
+    MyActions.$store = myReduxStore;
 
-### _schema
+The `$store` method was previously named `_store` (which is now deprecated).
+
+### $schema
 
 Returns the json schema describing the set of registered 
 actions (assuming, of course, that  schema definitions have been
-provided to `_add()`).
+provided to `$add()`).
+
+The `$schema` method was previously named `_schema` (which is now deprecated).
+
 
