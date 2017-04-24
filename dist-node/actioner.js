@@ -7,6 +7,8 @@ exports.default = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _class, _temp, _initialiseProps;
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -22,18 +24,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Ajv = void 0;
 var Immutable = void 0;
 
-var Actions = function () {
+var Actions = (_temp = _class = function () {
     function Actions() {
-        var args = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+        var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
         _classCallCheck(this, Actions);
 
-        this._schema_defs = {};
-        this._is_validating = false;
-        this._schema_id = 'http://localhost/actions';
-        this._schema = {};
-        this._immutable = false;
-        this._store = undefined;
+        _initialiseProps.call(this);
 
         if (args.schema_id) this._schema_id = args.schema_id;
 
@@ -47,8 +44,10 @@ var Actions = function () {
         }
 
         if (args.store) {
-            this._store = args.store;
+            this.$store = args.store;
         }
+
+        this.$schema_include = args.schema_include;
     }
 
     _createClass(Actions, [{
@@ -68,8 +67,8 @@ var Actions = function () {
             }
         }
     }, {
-        key: '_validate',
-        value: function _validate(v) {
+        key: '$validate',
+        value: function $validate(v) {
             this._is_validating = v;
 
             // only require if needed
@@ -83,8 +82,8 @@ var Actions = function () {
             }
         }
     }, {
-        key: '_add',
-        value: function _add(name) {
+        key: '$add',
+        value: function $add(name) {
             var _this = this;
 
             for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -151,29 +150,57 @@ var Actions = function () {
                 _this._store.dispatch(_this['$' + name](args));
             };
 
-            schema = schema ? { object: schema } : {};
-
-            schema = (0, _jsonSchemaShorthand2.default)(schema);
+            schema = (0, _jsonSchemaShorthand2.default)(_lodash2.default.merge(schema, this.$schema_include, { type: 'object' }));
 
             if (!schema.properties) {
                 schema.properties = {};
             }
             schema.properties['type'] = { enum: [token] };
-            if (schema.additionalProperties === undefined) {
-                schema.additionalProperties = false;
-            }
             this._schema_defs[name] = schema;
 
             this._update_schema();
         }
     }, {
+        key: '_store',
+        get: function get() {
+            return this.$store;
+        },
+        set: function set(s) {
+            return this.$store = s;
+        }
+    }, {
         key: 'schema',
         get: function get() {
-            return this._schema;
+            return this.$schema;
+        }
+    }, {
+        key: '_schema',
+        get: function get() {
+            return this.$schema;
+        },
+        set: function set(s) {
+            return this.$schema = s;
         }
     }]);
 
     return Actions;
-}();
+}(), _initialiseProps = function _initialiseProps() {
+    var _this2 = this;
 
+    this._schema_defs = {};
+    this._is_validating = false;
+    this._schema_id = 'http://localhost/actions';
+    this.$schema = {};
+    this._immutable = false;
+    this.$store = undefined;
+    this.$schema_include = null;
+
+    this._validate = function (v) {
+        return _this2.$validate(v);
+    };
+
+    this._add = function () {
+        return _this2.$add.apply(_this2, arguments);
+    };
+}, _temp);
 exports.default = Actions;
