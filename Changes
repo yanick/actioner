@@ -1,7 +1,9 @@
 Revision history for actioner
 
-NEXT
+0.2.0 2017-04-24
     - change 'generator' for 'creator' in the docs.
+    - rename helper functions from _foo to $foo.
+    - add schema_include.
 
 0.1.1 2016-10-13
     - dispatch_* functions were only acknowledging their first argument.
