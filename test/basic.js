@@ -2,6 +2,8 @@ import tap from 'tap';
 
 import Actioner from '../src/actioner';
 
+import { object, string, array } from 'json-schema-shorthand';
+
 tap.test( 'basic use', tap => {
     let Actions = new Actioner();
     Actions._add( 'foo' );
@@ -119,6 +121,11 @@ tap.test( 'raw generators', tap => {
     tap.end();
 });
 
+// TODO change tap for jest
+// use u.freeze for immutability
+// add options for the actions 
+// make avj configurable
+
 tap.test( 'immutable', tap => {
     let actions = new Actioner();
 
@@ -208,6 +215,19 @@ tap.test( 'schema_include', tap => {
     }
     );
 
+
+    tap.end();
+});
+
+tap.test( 'read-only attributes', tap => {
+    let actioner = new Actioner();
+
+    actioner.$add( 'init_game', object({
+        game: object({
+            name: string(),
+        }),
+        objects: array(),
+    }));
 
     tap.end();
 });

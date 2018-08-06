@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import shorthand from 'json-schema-shorthand';
+import u  from 'updeep';
 
 let Ajv;
 let Immutable;
@@ -91,8 +92,11 @@ class Actions {
         this[token] = token;
 
         this[name] = (...args) => {
-            let action = func(...args);
-            action.type = token;
+            let action = u({ type: token })(func(...args));
+
+            if(!this._immutable) {
+                action = _.cloneDeep(action);
+            }
 
             if ( this._is_validating ) {
                 if ( ! this._ajv.validate({
@@ -143,11 +147,9 @@ class Actions {
             { type: 'object' },
         )); 
 
-        if (! schema.properties ) {
-            schema.properties = {}
-        }
-        schema.properties['type'] = { enum: [ token ] };
-        this._schema_defs[name] = schema;
+        schema = u({ properties: { type: { enum: [ token ] } } })(schema);
+
+        this._schema_defs = u({ [name]: schema })(this._schema_defs);
 
         this._update_schema();
 
