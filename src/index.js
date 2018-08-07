@@ -1,9 +1,7 @@
 import _ from 'lodash';
 import shorthand from 'json-schema-shorthand';
 import u  from 'updeep';
-
-let Ajv;
-let Immutable;
+import Ajv from 'ajv';
 
 export default
 class Actions {
@@ -13,139 +11,128 @@ class Actions {
 
     _schema_id = 'http://localhost/actions';
 
-    $schema = {};
+    _actions = {};
 
-    _immutable = false;
+    _definitions = {};
 
-    $store = undefined;
-
-    $schema_include = null;
-    
+    _type_to_action = {};
 
     constructor(args={}) {
         if( args.schema_id ) this._schema_id = args.schema_id;
 
+        if( args.ajv ) {
+            this._ajv = args.ajv;
+        }
+
+        if( args.definitions ) {
+            this._definitions = args.definitions;
+        }
+
+        this._is_validating = false;
         if( args.validate !== undefined ) {
-            this._validate(args.validate);
+            this._is_validating = args.validate;
         }
 
-        if( args.immutable ) {
-            this._immutable = args.immutable;
-            Immutable = require( 'seamless-immutable' );
-        }
-
-        if( args.store ) {
-            this.$store = args.store;
-        }
-
-        this.$schema_include = args.schema_include;
+        this._schema_include = args.schema_include || {};
 
     }
 
-    get _store()  { return this.$store }
-    set _store(s) { return this.$store = s }
+    get schema_include() { return this._schema_include }
 
-    get schema()   { return this.$schema }
-    get _schema()  { return this.$schema }
-    set _schema(s) { return this.$schema = s }
+    get schema()   { return this._schema }
 
     _update_schema() {
         this._schema = shorthand({
-            definitions: this._schema_defs,
-            id: this._schema_id,
+            definitions: _.merge( {}, this._definitions, this._schema_defs ),
+            "$id": this._schema_id,
             oneOf: 
                 _(this._schema_defs).keys().map(
                     def => ({ '$ref': '#/definitions/' + def })
                 ).value()
         });
 
-        if ( this._ajv ) {
-            this._ajv.removeSchema( this._schema );
-            this._ajv.addSchema( this._schema, this._schema_id );
+        if ( this.ajv ) {
+            this.ajv.removeSchema( this._schema_id );
+            this.ajv.addSchema( this._schema, this._schema_id );
         }
     }
 
-    $validate(v) { 
-        this._is_validating = v 
+    get is_validating() { return this._is_validating }
 
-        // only require if needed
-        if ( this._is_validating ) {
-            if ( !Ajv ) Ajv = require('ajv');
-
-            if ( ! this._ajv ) {
-                this._ajv = new Ajv();
-                this._ajv.addSchema( this._schema, this._schema_id );
-            }
-        }
+    get types() {
+        return _.sortBy( _.keys( this._actions ).map(
+            token => token.replace( /([A-Z])/g, '_$1' ).toUpperCase()
+        ));
     }
 
-    _validate = v => this.$validate(v); 
+    get actions() {
+        return this._actions;
+    }
 
-    $add( name, ...args ) {
-        let func = 
-            args.length && typeof args[0] === 'function' ? args.shift() : x => x || {};
+    get mapped_types() {
+        return _.keyBy( this.types );
+    }
+
+    get ajv() { 
+        if(!this._ajv) {
+            this._ajv = new Ajv();
+        }
+        return this._ajv 
+    }
+
+    validate(action) {
+        if ( !this._is_validating ) return;
+
+        let type = this._type_to_action[action.type];
+
+        if(!type) throw new Error( `type ${action.type} not recognized` );
+
+        if ( this.ajv.validate({
+                '$ref': this._schema_id + '#/definitions/' + type
+            }, action )
+        ) return;
+        
+        let error = this._ajv.errors;
+        error.action = action;
+        throw error;
+    }
+
+    add( name, ...args ) {
+        let func = args.length && typeof args[0] === 'function' 
+                            ? args.shift() 
+                            : x => x || {};
 
         let schema = args.shift();
 
         let token = name.replace( /([A-Z])/g, '_$1' ).toUpperCase();
 
-        this[token] = token;
+        this._type_to_action[ token ] = name;
 
-        this[name] = (...args) => {
-            let action = u({ type: token })(func(...args));
+        let steps = [
+            func,
+            u({ type: token }),
+        ];
 
-            if(!this._immutable) {
-                action = _.cloneDeep(action);
-            }
-
-            if ( this._is_validating ) {
-                if ( ! this._ajv.validate({
-                    '$ref': this._schema_id + '#/definitions/' + name
-                }, action )){
+        if ( this._is_validating ) {
+            steps.push( action => {
+                if ( ! this.ajv.validate({
+                        '$ref': this._schema_id + '#/definitions/' + name
+                    }, action )
+                ){
                     let error = this._ajv.errors;
                     error.action = action;
                     throw error;
                 }
+                return action;
+            })
+        }
 
-            }
+        this._actions[name] = _.flow(steps);
 
-            if ( this._immutable ) action = Immutable(action);
-
-            return action;
-        };
-
-        this[ '$' + name ] = (args) => {
-            let action = _.cloneDeep(args);
-            action.type = token;
-
-            if ( this._is_validating ) {
-                if ( ! this._ajv.validate({
-                    '$ref': this._schema_id + '#/definitions/' + name
-                }, action )){
-                    let error = this._ajv.errors;
-                    error.action = action;
-                    throw error;
-                }
-
-            }
-
-            if ( this._immutable ) action = Immutable(action);
-
-            return action;
-        };
-
-        this[ 'dispatch_' + name ] = (...args) => {
-            this._store.dispatch( this[name].apply(null,args) );
-        };
-
-        this[ 'dispatch_$' + name ] = (args) => {
-            this._store.dispatch( this[ '$' + name](args) );
-        };
-
-        schema = shorthand( _.merge( schema, 
-            this.$schema_include, 
+        schema = _.merge( {}, shorthand(schema), 
+            shorthand(this._schema_include), 
             { type: 'object' },
-        )); 
+        ); 
 
         schema = u({ properties: { type: { enum: [ token ] } } })(schema);
 
@@ -153,9 +140,7 @@ class Actions {
 
         this._update_schema();
 
+        return this;
     }
-
-    _add = (...args) => this.$add(...args);
-
 
 }

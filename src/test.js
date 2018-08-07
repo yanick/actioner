@@ -5,32 +5,37 @@ import { object, string, array } from 'json-schema-shorthand';
 
 test( 'basic use', () => {
     let Actions = new Actioner();
-    Actions._add( 'foo' );
+    Actions.add( 'foo' ).add( 'bar' );
 
-    expect( Actions.FOO ).toBe('FOO');
-    expect( Actions.foo() ).toMatchObject( { type: 'FOO' });
+    expect( Actions.types ).toMatchObject([ 'BAR', 'FOO' ]);
+    expect( Actions.actions.foo() ).toMatchObject( { type: 'FOO' });
 
 });
 
 test( 'camel and snake cases', () => {
     let Actions = new Actioner();
-    Actions._add( 'foo_bar' );
-    Actions._add( 'quxBar' );
+    Actions.add( 'foo_bar' );
+    Actions.add( 'quxBar' );
 
-    expect( Actions.foo_bar() ).toMatchObject({ type: 'FOO_BAR' }); // snake case
-    expect( Actions.quxBar() ).toMatchObject({ type: 'QUX_BAR' }); // "camel case"
+    expect( Actions.types ).toMatchObject( [ 'FOO_BAR', 'QUX_BAR' ] );
+
+    expect( Actions.actions.foo_bar() ).toMatchObject({ type: 'FOO_BAR' }); // snake case
+    expect( Actions.actions.quxBar() ).toMatchObject({ type: 'QUX_BAR' }); // "camel case"
 });
 
 test( 'generator', () => {
     let Actions = new Actioner();
-    Actions._add( 'foo', x => ( { bar: x } ) );
+    Actions.add( 'foo', x => ( { bar: x } ) );
 
-    expect( Actions.foo('baz') ).toMatchObject({ type: 'FOO', bar: 'baz' });
+    expect( Actions.actions.foo('baz') ).toMatchObject({ type: 'FOO', bar: 'baz' });
 });
 
 test( 'validation + schema', () => {
-    let Actions = new Actioner();
-    Actions._add( 'add_ship', { 
+    let Actions = new Actioner({ validate: true });
+
+    expect(Actions.ajv).toBeInstanceOf( require('ajv') );
+
+    Actions.add( 'add_ship', { 
         properties: {
             ship_id: { type: 'string', required: true },
             hull:    { type: 'number', required: true },
@@ -38,142 +43,61 @@ test( 'validation + schema', () => {
         additional_properties: false,
     });
 
-    expect( Actions.add_ship()).toMatchObject({ type: 'ADD_SHIP' });
-    //, "no validation by default" );
+    expect(Actions.schema).toMatchSnapshot();
 
-    expect( Actions.schema ).toMatchObject({ id: 'http://localhost/actions' }); 
-    //, '_schema' );
-
-    Actions._validate(true);
-
-    expect( () => {
-        Actions.add_ship();
-        tap.fail( "add_ship should throw" );
-    } ).toThrow();
+    expect( () => Actions.actions.add_ship() ).toThrow();
 
     // doesn't throw
-    Actions.add_ship({ ship_id: 'enkidu', hull: 9 });
-
-    let schema = Actions.schema;
-
-    expect( schema.definitions.add_ship ).toMatchObject({ type: 'object' } );
+    Actions.actions.add_ship({ ship_id: 'enkidu', hull: 9 });
 });
 
 test( 'constructor', () => {
     let actions = new Actioner({ validate: true, schema_id: "stuff" });
 
-    expect( actions._is_validating ).toBe(true);
+    expect( actions.is_validating ).toBe(true);
     expect(actions._schema_id ).toBe('stuff' );
 });
 
 test( 'validation', () => {
+    // defaults 
+    let actioner = new Actioner();
+    expect(actioner.is_validating).toBe(false);
+
     let actions = new Actioner({
         validate: true, 
         schema_id: "stuff" 
     });
 
-    actions._add( 'foo', { properties: { bar: 'string' } } );
-    actions._add( 'baz', { properties: { bar: 'string' } } );
+    actions.add( 'foo', { properties: { bar: 'string' } } );
+    actions.add( 'baz', { properties: { bar: 'string' } } );
 
-    actions.foo({ bar: 'hello' });
+    let { foo } = actions.actions;
 
-    expect( () => actions.foo({ bar: [] }) ).toThrow();
+    foo({ bar: 'hello' });
+
+    expect( () => foo({ bar: [] }) ).toThrow();
 
 });
 
-test( 'raw generators', () => {
+test( 'generators', () => {
     let actions = new Actioner();
 
-    actions._add( 'foo', x => ( { stuff:x } ) );
+    actions.add( 'foo', x => ( { stuff:x } ) );
 
-    expect( actions.foo( 'blah' ) ).toMatchObject({
+    expect( actions.actions.foo( 'blah' ) ).toMatchObject({
         type: 'FOO',
         stuff: 'blah' 
     }); //, 'regular generator' );
-
-    expect( actions.$foo( { 'thing': 'bleh' }) ).toMatchObject({
-        type: 'FOO',
-        thing: 'bleh' 
-    });//, 'raw generator' );
-
 });
-
- // use u.freeze for immutability
- // add options for the actions 
- // make avj configurable
 
 test( 'immutable', () => {
     let actions = new Actioner();
 
-    actions._add( 'foo' );
+    actions.add( 'foo' );
 
-    let foo = actions.foo({ bar:  1 });
-    foo.baz = 2;
+    let foo = actions.actions.foo({ bar:  1 });
 
-    expect(foo).toMatchObject({ type: 'FOO', bar: 1, baz: 2 });
-    //, 'mutable' );
-
-    actions = new Actioner({ immutable: true });
-
-    actions._add( 'foo' );
-
-    foo = actions.foo({ bar:  1 });
     expect( () => foo.baz = 2 ).toThrow();
-
-    expect( foo.asMutable() ).toMatchObject({ type: 'FOO', bar: 1 });
-    //, 'immutable' );
-
-});
-
-test( 'dispatch', () => {
-    let dispatched = [];
-    let store = {
-        dispatch: a => dispatched.push(a)
-    };
-
-    let actions = new Actioner({ store: store });
-
-    actions._add( 'foo' );
-
-    actions._add( 'bar', (x,y) => (  { x, y } ) );
-    
-    actions.dispatch_foo({ bar: 1 });
-
-    expect( dispatched.shift() ).toMatchObject({ type: 'FOO', bar: 1 });
-
-    actions.dispatch_$foo({ bar: 2 });
-
-    expect( dispatched.shift() ).toMatchObject({ type: 'FOO', bar: 2 } );
-
-    actions.dispatch_bar(1,2);
-
-    expect( dispatched.shift() ).toMatchObject({ type: 'BAR', x: 1, y: 2 } );
-
-    actions.dispatch_$bar({ x: 3, y: 4 });
-
-    expect( dispatched.shift() ).toMatchObject( { type: 'BAR', x: 3, y: 4 } );
-
-});
-
-test( '_store function', () => {
-    let dispatched = [];
-    let store = {
-        dispatch: a => dispatched.push(a)
-    };
-
-    let actions = new Actioner();
-    actions._store = store;
-
-    actions._add( 'foo' );
-    
-    actions.dispatch_foo({ bar: 1 });
-
-    expect( dispatched.shift() ).toMatchObject({ type: 'FOO', bar: 1 } );
-
-    actions.dispatch_$foo({ bar: 2 });
-
-    expect( dispatched.shift() ).toMatchObject({ type: 'FOO', bar: 2 } );
-
 });
 
 test( 'schema_include', () => {
@@ -181,9 +105,9 @@ test( 'schema_include', () => {
         schema_include: { properties: { alpha: 'number' } }
     });
 
-    actions.$add( 'foo', { properties: { beta: 'string' } } );
+    actions.add( 'foo', { properties: { beta: 'string' } } );
 
-    expect( actions.$schema.definitions.foo.properties ).toMatchObject(
+    expect( actions.schema.definitions.foo.properties ).toMatchObject(
         { alpha: {  type: 'number' }, beta: { type: 'string' },
             type: { enum: [ 'FOO' ] }
     }
@@ -195,12 +119,88 @@ test( 'schema_include', () => {
 test( 'read-only attributes', () => {
     let actioner = new Actioner();
 
-    actioner.$add( 'init_game', object({
-        game: object({
-            name: string(),
-        }),
+    actioner.add( 'init_game', object({
+        game: object({ name: string() }),
         objects: array(),
     }));
 
 });
 
+test( 'typical export', () => {
+    let { DO_STUFF, do_stuff } = require( './test_helper' );
+
+    expect(DO_STUFF).toBe('DO_STUFF');
+    expect(do_stuff()).toMatchObject({ type: DO_STUFF, foo: true });
+});
+
+test( 'shorthands are expanded', () => {
+    const actioner = new Actioner();
+    actioner.add( 'do_stuff', { 
+        type: 'object',
+        properties: {
+            thing: 'string!'
+        }
+    });
+
+    expect(actioner.schema).toMatchObject({
+        definitions: { 
+            do_stuff: {
+                type: 'object',
+                required: [ 'thing' ],
+                properties: { thing: { type: 'string' } },
+            }
+        }
+    });
+});
+
+test( 'includes', () => {
+    let actioner = new Actioner({
+        schema_include: {
+            properties: {
+                included: { type: "boolean" }
+            }
+        }
+    });
+
+    actioner.add( 'foo', object({
+        bar: 'number'
+    }) );
+
+    expect(actioner.schema).toHaveProperty(
+        'definitions.foo.properties.included'
+    );
+    
+});
+
+test.only( 'definitions', () => {
+    let actioner = new Actioner({
+        validate: true,
+        definitions: {
+            included: {
+                type: 'boolean',
+            },
+        },
+        schema_include: {
+            properties: {
+                included: '#/definitions/included'
+            }
+        }
+    });
+
+    actioner.add( 'foo', object({
+        bar: 'number'
+    }) );
+
+    expect(actioner.schema).toHaveProperty(
+        'definitions.foo.properties.included.$ref'
+    );
+
+    expect( () =>
+        actioner.validate( 'foo', { type: 'FOO', included: "potato" } )
+    ).toThrow();
+
+    expect( () =>
+        actioner.validate( 'foo', { type: 'FOO', included: true } )
+    ).not.toThrow();
+    
+});
