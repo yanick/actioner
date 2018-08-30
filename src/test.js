@@ -7,7 +7,7 @@ test( 'basic use', () => {
     let Actions = new Actioner();
     Actions.add( 'foo' ).add( 'bar' );
 
-    expect( Actions.types ).toMatchObject([ 'BAR', 'FOO' ]);
+    expect( Actions.types ).toMatchObject({ 'BAR': 'BAR', 'FOO': 'FOO' });
     expect( Actions.actions.foo() ).toMatchObject( { type: 'FOO' });
 
 });
@@ -17,7 +17,7 @@ test( 'camel and snake cases', () => {
     Actions.add( 'foo_bar' );
     Actions.add( 'quxBar' );
 
-    expect( Actions.types ).toMatchObject( [ 'FOO_BAR', 'QUX_BAR' ] );
+    expect( Actions.types ).toMatchObject( { 'FOO_BAR': 'FOO_BAR', 'QUX_BAR': 'QUX_BAR' } );
 
     expect( Actions.actions.foo_bar() ).toMatchObject({ type: 'FOO_BAR' }); // snake case
     expect( Actions.actions.quxBar() ).toMatchObject({ type: 'QUX_BAR' }); // "camel case"
@@ -172,7 +172,7 @@ test( 'includes', () => {
     
 });
 
-test.only( 'definitions', () => {
+test( 'definitions', () => {
     let actioner = new Actioner({
         validate: true,
         definitions: {
@@ -196,11 +196,11 @@ test.only( 'definitions', () => {
     );
 
     expect( () =>
-        actioner.validate( 'foo', { type: 'FOO', included: "potato" } )
+        actioner.validate( { type: 'FOO', included: "potato" } )
     ).toThrow();
 
     expect( () =>
-        actioner.validate( 'foo', { type: 'FOO', included: true } )
+        actioner.validate( { type: 'FOO', included: true } )
     ).not.toThrow();
     
 });

@@ -3,6 +3,8 @@ import shorthand from 'json-schema-shorthand';
 import u  from 'updeep';
 import Ajv from 'ajv';
 
+const as_type = name => name.replace( /([A-Z])/g, '_$1' ).toUpperCase();
+
 export default
 class Actions {
     _schema_defs = {};
@@ -60,17 +62,13 @@ class Actions {
     get is_validating() { return this._is_validating }
 
     get types() {
-        return _.sortBy( _.keys( this._actions ).map(
-            token => token.replace( /([A-Z])/g, '_$1' ).toUpperCase()
+        return _.keyBy( _.keys( this._actions ).map(
+            as_type
         ));
     }
 
     get actions() {
         return this._actions;
-    }
-
-    get mapped_types() {
-        return _.keyBy( this.types );
     }
 
     get ajv() { 
@@ -104,7 +102,7 @@ class Actions {
 
         let schema = args.shift();
 
-        let token = name.replace( /([A-Z])/g, '_$1' ).toUpperCase();
+        let token = as_type(name);
 
         this._type_to_action[ token ] = name;
 
