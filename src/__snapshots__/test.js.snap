@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`validation + schema 1`] = `
+Object {
+  "$id": "http://localhost/actions",
+  "definitions": Object {
+    "add_ship": Object {
+      "additional_properties": false,
+      "properties": Object {
+        "hull": Object {
+          "type": "number",
+        },
+        "ship_id": Object {
+          "type": "string",
+        },
+        "type": Object {
+          "enum": Array [
+            "ADD_SHIP",
+          ],
+        },
+      },
+      "required": Array [
+        "hull",
+        "ship_id",
+      ],
+      "type": "object",
+    },
+  },
+  "oneOf": Array [
+    Object {
+      "$ref": "#/definitions/add_ship",
+    },
+  ],
+}
+`;
