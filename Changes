@@ -1,6 +1,6 @@
 Revision history for actioner 
 
-NEXT
+1.0.0 2018-10-19
     - move tests to jest.
     - remove integration with store and dispatch (was trying to be too clever).
 
